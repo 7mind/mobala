@@ -106,91 +106,89 @@ function nixify() {
     fi
 }
 
-function mobala() {
-    # parse command line and execute modes
-    idx=0
-    arguments=("$@")
-    arguments_length="${#arguments[@]}"
-    while [[ $idx -lt $arguments_length ]] ; do
-        arg="${arguments[idx]}"
-        case "$arg" in
-            --path)
-              arg="${arguments[$((idx+1))]}"
-              idx=$((idx+2))
-              echo "[info] Working in $arg"
-              cd "${arg}"
-              ;;
+# parse command line and execute modes
+idx=0
+arguments=("$@")
+arguments_length="${#arguments[@]}"
+while [[ $idx -lt $arguments_length ]] ; do
+    arg="${arguments[idx]}"
+    case "$arg" in
+        --path)
+          arg="${arguments[$((idx+1))]}"
+          idx=$((idx+2))
+          echo "[info] Working in $arg"
+          cd "${arg}"
+          ;;
 
-            nix|--nix)
-              idx=$((idx+1))
-              shift && nixify "$@"
-              ;;
+        nix|--nix)
+          idx=$((idx+1))
+          shift && nixify "$@"
+          ;;
 
-            --help)
-              idx=$((idx+1))
-              print-help
-              exit 0
-              ;;
+        --help)
+          idx=$((idx+1))
+          print-help
+          exit 0
+          ;;
 
-            -v|--verbose)
-              idx=$((idx+1))
-              set -x
-              export DO_VERBOSE=1
-              ;;
+        -v|--verbose)
+          idx=$((idx+1))
+          set -x
+          export DO_VERBOSE=1
+          ;;
 
-            -e|--env)
-              arg="${arguments[$((idx+1))]}"
-              idx=$((idx+2))
-              export "$(echo "${arg}" | xargs)"
-              ;;
+        -e|--env)
+          arg="${arguments[$((idx+1))]}"
+          idx=$((idx+2))
+          export "$(echo "${arg}" | xargs)"
+          ;;
 
-            --*=*)
-              idx=$((idx+1))
+        --*=*)
+          idx=$((idx+1))
 
-              # set build parameter
-              build_param=$(echo "${arg:2}" | cut -d "=" -f 1)
-              build_arg=$(echo "${arg:2}" | cut -d "=" -f 2)
-              if [[ -f "${MOBALA_PARAMS}/$build_param.sh" ]]; then
-                  echo "[info] Setting build parameter: $build_param=$build_arg"
-                  function run-param() { source "${MOBALA_PARAMS}/$build_param.sh" $build_arg ; } ; run-param
-              fi
-              ;;
+          # set build parameter
+          build_param=$(echo "${arg:2}" | cut -d "=" -f 1)
+          build_arg=$(echo "${arg:2}" | cut -d "=" -f 2)
+          if [[ -f "${MOBALA_PARAMS}/$build_param.sh" ]]; then
+              echo "[info] Setting build parameter: $build_param=$build_arg"
+              function run-param() { source "${MOBALA_PARAMS}/$build_param.sh" $build_arg ; } ; run-param
+          fi
+          ;;
 
-            --*)
-              idx=$((idx+1))
+        --*)
+          idx=$((idx+1))
 
-              # apply build parameter
-              build_param="${arg:2}"
-              if [[ -f "${MOBALA_PARAMS}/$build_param.sh" ]]; then
-                  echo "[info] Applying build parameter: $build_param"
-                  function run-param() { source "${MOBALA_PARAMS}/$build_param.sh" ; } ; run-param
-              fi
-              ;;
+          # apply build parameter
+          build_param="${arg:2}"
+          if [[ -f "${MOBALA_PARAMS}/$build_param.sh" ]]; then
+              echo "[info] Applying build parameter: $build_param"
+              function run-param() { source "${MOBALA_PARAMS}/$build_param.sh" ; } ; run-param
+          fi
+          ;;
 
-            :*)
+        :*)
+            idx=$((idx+1))
+
+            # parse build mode arguments
+            build_mode="${arg:1}"
+            build_mode_args=()
+            while [[ $idx -lt $arguments_length ]] && ! [[ "${arguments[idx]}" =~ ^:.* ]] ; do
+                build_mode_args+=("${arguments[idx]}")
                 idx=$((idx+1))
+            done
 
-                # parse build mode arguments
-                build_mode="${arg:1}"
-                build_mode_args=()
-                while [[ $idx -lt $arguments_length ]] && ! [[ "${arguments[idx]}" =~ ^:.* ]] ; do
-                    build_mode_args+=("${arguments[idx]}")
-                    idx=$((idx+1))
-                done
+            # run build mode
+            if [[ -f "${MOBALA_MODS}/$build_mode.sh" ]]; then
+                echo "[info] Applying mode $build_mode: '${MOBALA_MODS}/$build_mode.sh ${build_mode_args[*]}'"
+                function run-mode() { source "${MOBALA_MODS}/$build_mode.sh" "${build_mode_args[@]}" ; } ; run-mode
+            fi
+            ;;
 
-                # run build mode
-                if [[ -f "${MOBALA_MODS}/$build_mode.sh" ]]; then
-                    echo "[info] Applying mode $build_mode: '${MOBALA_MODS}/$build_mode.sh ${build_mode_args[*]}'"
-                    function run-mode() { source "${MOBALA_MODS}/$build_mode.sh" "${build_mode_args[@]}" ; } ; run-mode
-                fi
-                ;;
-
-            *)
-                idx=$((idx+1))
-                ;;
-        esac
-    done
-}
+        *)
+            idx=$((idx+1))
+            ;;
+    esac
+done
 
 # source default environment
 source "${MOBALA_ENV}"
