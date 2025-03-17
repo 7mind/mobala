@@ -117,6 +117,7 @@ function mobala() {
             --path)
               arg="${arguments[$((idx+1))]}"
               idx=$((idx+2))
+              echo "[info] Working in $arg"
               cd "${arg}"
               ;;
 
