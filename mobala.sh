@@ -114,6 +114,12 @@ function mobala() {
     while [[ $idx -lt $arguments_length ]] ; do
         arg="${arguments[idx]}"
         case "$arg" in
+            --path)
+              arg="${arguments[$((idx+1))]}"
+              idx=$((idx+2))
+              cd "${arg}"
+              ;;
+
             nix|--nix)
               idx=$((idx+1))
               shift && nixify "$@"
