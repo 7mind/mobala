@@ -43,7 +43,7 @@ function print-help() {
     echo-bold "Mobala parameters (${MOBALA_PARAMS}):"
     print-command-help "--nix" "Nixify runner commands."
     print-command-help "--verbose|-v" "Enable verbose logging for runner commands."
-    print-command-help "--env|--e" 'Specify environment variable. Usage `-e PARAM=test`.'
+    print-command-help "--env|-e" 'Specify environment variable. Usage `-e PARAM=test`.'
     if [[ -d "${MOBALA_PARAMS}" ]]; then
         params=($(ls -f $MOBALA_PARAMS | sort | grep ".sh" || true))
         for param in "${params[@]}"; do
@@ -117,7 +117,7 @@ arguments_length="${#arguments[@]}"
 while [[ $idx -lt $arguments_length ]] ; do
     arg="${arguments[idx]}"
     case "$arg" in
-        nix|--nix)
+        --nix)
           idx=$((idx+1))
           shift && nixify "$@"
           ;;
