@@ -3,20 +3,6 @@
 
 set -euo pipefail
 
-self="$(realpath "$0")"
-path="$(dirname "$self")"
-echo "[info] Working in $path"
-cd "$path"
-
-export MOBALA_KEEP=${MOBALA_KEEP:-"$(pwd)/.keep.env"}
-export MOBALA_ENV=${MOBALA_ENV:-"$(pwd)/devops/env.sh"}
-export MOBALA_MODS=${MOBALA_MODS:-"$(pwd)/devops/mods"}
-export MOBALA_PARAMS=${MOBALA_PARAMS:-"$(pwd)/devops/params"}
-
-export LANG="C.UTF-8"
-export NIXIFIED=${NIXIFIED:-0}
-export DO_VERBOSE=${DO_VERBOSE:-0}
-
 function add_prefix() {
     prefix="$1"
     while IFS= read -r line; do
@@ -45,7 +31,7 @@ function print-command-help() {
 }
 
 function print-help() {
-    echo "Mobala bash runner!"
+    echo-bold "Welcome to Modular Bash Launcher!"
 
     if [[ -f "${MOBALA_ENV}" ]]; then
         echo-bold "Mobala environment (${MOBALA_ENV}):"
@@ -90,6 +76,7 @@ function nixify() {
           --ignore-environment \
           --keep HOME \
           --keep NIXIFIED \
+          --keep MOBALA_PATH \
           --keep MOBALA_KEEP \
           --keep MOBALA_ENV \
           --keep MOBALA_MODS \
@@ -102,9 +89,26 @@ function nixify() {
           --keep CI_PULL_REQUEST \
           --keep CI_BUILD_UNIQ_SUFFIX \
           "${args[@]}" \
-          --command bash "$self" "$@"
+          --command bash "$script_path" "$@"
     fi
 }
+
+script_path="$(realpath "$0")"
+script_dirname="$(dirname "$script_path")"
+
+export MOBALA_PATH=${MOBALA_PATH:-"${script_dirname}"}
+export MOBALA_KEEP=${MOBALA_KEEP:-"${MOBALA_PATH}/.keep.env"}
+export MOBALA_ENV=${MOBALA_ENV:-"${MOBALA_PATH}/devops/env.sh"}
+export MOBALA_MODS=${MOBALA_MODS:-"${MOBALA_PATH}/devops/mods"}
+export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/devops/params"}
+
+export LANG="C.UTF-8"
+export NIXIFIED=${NIXIFIED:-0}
+export DO_VERBOSE=${DO_VERBOSE:-0}
+
+echo "[info] Script in '${script_path}'"
+echo "[info] Working in '${MOBALA_PATH}'."
+cd "$MOBALA_PATH"
 
 # parse command line and execute modes
 idx=0
@@ -113,13 +117,6 @@ arguments_length="${#arguments[@]}"
 while [[ $idx -lt $arguments_length ]] ; do
     arg="${arguments[idx]}"
     case "$arg" in
-        --path)
-          arg="${arguments[$((idx+1))]}"
-          idx=$((idx+2))
-          echo "[info] Working in $arg"
-          cd "${arg}"
-          ;;
-
         nix|--nix)
           idx=$((idx+1))
           shift && nixify "$@"
