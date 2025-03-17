@@ -8,10 +8,10 @@ path="$(dirname "$self")"
 echo "[info] Working in $path"
 cd "$path"
 
-export MOBALA_KEEP=${MOBALA_SOURCES:-"$(pwd)/.keep.env"}
-export MOBALA_ENV=${MOBALA_SOURCES:-"$(pwd)/devops/env.sh"}
-export MOBALA_MODS=${MOBALA_SOURCES:-"$(pwd)/devops/mods"}
-export MOBALA_PARAMS=${MOBALA_SOURCES:-"$(pwd)/devops/params"}
+export MOBALA_KEEP=${MOBALA_KEEP:-"$(pwd)/.keep.env"}
+export MOBALA_ENV=${MOBALA_ENV:-"$(pwd)/devops/env.sh"}
+export MOBALA_MODS=${MOBALA_MODS:-"$(pwd)/devops/mods"}
+export MOBALA_PARAMS=${MOBALA_PARAMS:-"$(pwd)/devops/params"}
 
 export LANG="C.UTF-8"
 export NIXIFIED=${NIXIFIED:-0}
@@ -79,7 +79,7 @@ function print-help() {
 }
 
 function nixify() {
-    read -r -a args <<< "$(grep -v '^\s*$' .keep.env | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
+    read -r -a args <<< "$(grep -v '^\s*$' $MOBALA_KEEP | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
 
     if [[ -z "${IN_NIX_SHELL+x}" ]]; then
         echo "[info] Restarting in Nix..."
@@ -90,6 +90,10 @@ function nixify() {
           --ignore-environment \
           --keep HOME \
           --keep NIXIFIED \
+          --keep MOBALA_KEEP \
+          --keep MOBALA_ENV \
+          --keep MOBALA_MODS \
+          --keep MOBALA_PARAMS \
           --keep DO_VERBOSE \
           --keep CI \
           --keep CI_BRANCH \
