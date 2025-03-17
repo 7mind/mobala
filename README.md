@@ -1,1 +1,1 @@
-# mobala
+# Modular Bash Launcher

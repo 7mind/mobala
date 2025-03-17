@@ -97,10 +97,10 @@ script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
 
 export MOBALA_PATH=${MOBALA_PATH:-"${script_dirname}"}
-export MOBALA_KEEP=${MOBALA_KEEP:-"${MOBALA_PATH}/.keep.env"}
-export MOBALA_ENV=${MOBALA_ENV:-"${MOBALA_PATH}/devops/env.sh"}
-export MOBALA_MODS=${MOBALA_MODS:-"${MOBALA_PATH}/devops/mods"}
-export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/devops/params"}
+export MOBALA_KEEP=${MOBALA_KEEP:-"${MOBALA_PATH}/mobala/keep.env"}
+export MOBALA_ENV=${MOBALA_ENV:-"${MOBALA_PATH}/mobala/env.sh"}
+export MOBALA_MODS=${MOBALA_MODS:-"${MOBALA_PATH}/mobala/mods"}
+export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/mobala/params"}
 
 export LANG="C.UTF-8"
 export NIXIFIED=${NIXIFIED:-0}
