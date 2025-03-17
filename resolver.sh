@@ -8,10 +8,7 @@ export MOBALA_CACHE_TMP="${CACHE_DIR}/mobala.sh.tmp"
 export MOBALA_FILE="https://raw.githubusercontent.com/7mind/mobala/refs/heads/develop/mobala.sh"
 
 function cleanup-cache() {
-    if [[ -f "${MOBALA_CACHE_TMP}" ]]; then
-        rm "${MOBALA_CACHE_TMP}"
-    fi
-
+    rm -rf "${MOBALA_CACHE_TMP}"
     if [[ -f "${MOBALA_CACHE}" ]]; then
         echo "[info] Mobala.sh cache found at '${MOBALA_CACHE}'"
     else
