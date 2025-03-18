@@ -5,7 +5,7 @@ set -euo pipefail
 export CACHE_DIR="${XDG_CACHE_HOME:-"${HOME}/.cache"}"
 export MOBALA_CACHE="${CACHE_DIR}/mobala.sh"
 export MOBALA_CACHE_TMP="${CACHE_DIR}/mobala.sh.tmp"
-export MOBALA_FILE="https://raw.githubusercontent.com/7mind/mobala/refs/heads/main/mobala.sh123"
+export MOBALA_FILE="https://raw.githubusercontent.com/7mind/mobala/refs/heads/release/mobala.sh"
 
 function cleanup-cache() {
     rm -rf "${MOBALA_CACHE_TMP}"
