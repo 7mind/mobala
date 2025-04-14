@@ -18,12 +18,13 @@ function check-cache() {
 }
 
 function download-file() {
-    target="${1}"
+    origin="${1}"
+    target="${2}"
     mkdir -p "${CACHE_DIR}"
     cache_name="$(basename "$target")"
     cache_tmp="${CACHE_DIR}/${cache_name}.tmp"
     rm -rf "${cache_tmp}"
-    download_response=$(curl -sLJ0 -o "${cache_tmp}" -w "%{response_code}" "${MOBALA_FILE}" || true)
+    download_response=$(curl -sLJ0 -o "${cache_tmp}" -w "%{response_code}" "${origin}" || true)
     if [[ "${download_response}" == "200" ]]; then
         rm -rf "${MOBALA_CACHE}"
         mv "${cache_tmp}" "${target}"
@@ -36,7 +37,7 @@ function download-file() {
 
 
 function update-cache() {
-    download-file "${MOBALA_CACHE}"
+    download-file "${MOBALA_FILE}" "${MOBALA_CACHE}"
 }
 
 function verify-cache() {
@@ -57,7 +58,7 @@ export MOBALA_MODS=${MOBALA_MODS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/mods"}
 export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/params"}
 
 function update-self(){
-    download-file "${script_path}"
+    download-file "${MOBALA_BASE}/mobala-resolver.sh" "${script_path}"
 }
 
 trap 'update-self' EXIT
