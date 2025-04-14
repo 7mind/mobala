@@ -65,6 +65,7 @@ function print-help() {
 }
 
 function nixify() {
+    lines=()
     read -r -a args <<< "$(grep -v '^\s*$' $MOBALA_KEEP | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
 
     cat $MOBALA_KEEP
