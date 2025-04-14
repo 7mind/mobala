@@ -59,7 +59,7 @@ export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/params"}
 
 function update-self(){
     download-file "${MOBALA_BASE}/mobala-resolver.sh" "${script_path}"
-    sed -i '0,/export MOBALA_VERSION=/{s/.*export MOBALA_VERSION=.*/export MOBALA_VERSION="'export MOBALA_VERSION="'"/}' "${script_path}"
+    sed -i '0,/export MOBALA_VERSION=/{s/.*export MOBALA_VERSION=.*/export MOBALA_VERSION="'${MOBALA_VERSION}'"/}' "${script_path}"
 }
 
 trap 'update-self' EXIT
