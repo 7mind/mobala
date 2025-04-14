@@ -20,7 +20,8 @@ function check-cache() {
 function download-file() {
     target="${1}"
     mkdir -p "${CACHE_DIR}"
-    cache_tmp="${CACHE_DIR}/${target}.tmp"
+    cache_name="$(basename "$target")"
+    cache_tmp="${CACHE_DIR}/${cache_name}.tmp"
     rm -rf "${cache_tmp}"
     download_response=$(curl -sLJ0 -o "${cache_tmp}" -w "%{response_code}" "${MOBALA_FILE}" || true)
     if [[ "${download_response}" == "200" ]]; then
@@ -45,10 +46,6 @@ function verify-cache() {
     fi
 }
 
-
-trap some_function EXIT
-
-
 script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
 
@@ -64,6 +61,7 @@ function update-self(){
 }
 
 trap 'update-self' EXIT
+
 check-cache
 update-cache
 verify-cache
