@@ -28,9 +28,9 @@ function download-file() {
     if [[ "${download_response}" == "200" ]]; then
         rm -rf "${target}"
         mv "${cache_tmp}" "${target}"
-        echo "[info] Mobala.sh cache updated."
+        echo "[info] cache updated: ${target}"
     else
-        echo "[warn] Mobala.sh download failed with ${download_response} status code."
+        echo "[warn] download failed with ${download_response} status code for $}"
         rm "${cache_tmp}"
     fi
 }
