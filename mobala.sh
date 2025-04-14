@@ -66,7 +66,6 @@ function print-help() {
 
 function nixify() {
     read -r -a args <<< "$(grep -v '^\s*$' $MOBALA_KEEP | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
-    args=("${args[@]:-}")
 
     if [[ -z "${IN_NIX_SHELL+x}" ]]; then
         echo "[info] Restarting in Nix..."
@@ -90,7 +89,7 @@ function nixify() {
           --keep CI_BRANCH_TAG \
           --keep CI_PULL_REQUEST \
           --keep CI_BUILD_UNIQ_SUFFIX \
-          "${args[@]}" \
+          "${args[@]:-}" \
           --command bash "$script_path" "$@"
     fi
 }
