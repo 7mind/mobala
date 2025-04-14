@@ -98,7 +98,7 @@ script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
 
 export MOBALA_PATH=${MOBALA_PATH:-"${script_dirname}"}
-export MOBALA_SUBDIR=${MOBALA_KEEP:-".mobala"}
+export MOBALA_SUBDIR=${MOBALA_SUBDIR:-".mobala"}
 export MOBALA_KEEP=${MOBALA_KEEP:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/keep.env"}
 export MOBALA_ENV=${MOBALA_ENV:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/env.sh"}
 export MOBALA_MODS=${MOBALA_MODS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/mods"}
