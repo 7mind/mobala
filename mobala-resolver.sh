@@ -58,9 +58,11 @@ function verify-cache() {
 }
 
 function update-self(){
+  if [[ "${CI:-false}" == "false" ]] ; then
     set -xe
     download-file "${MOBALA_BASE}/mobala-resolver.sh" "${script_path}"
     sed -i '0,/export MOBALA_VERSION=/{s/.*export MOBALA_VERSION=.*/export MOBALA_VERSION="'${MOBALA_VERSION}'"/}' "${script_path}"
+  fi
 }
 
 trap 'update-self' EXIT
