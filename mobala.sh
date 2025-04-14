@@ -67,6 +67,9 @@ function print-help() {
 function nixify() {
     read -r -a args <<< "$(grep -v '^\s*$' $MOBALA_KEEP | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
 
+    cat $MOBALA_KEEP
+    echo "${args}"
+
     if [[ -z "${IN_NIX_SHELL+x}" ]]; then
         echo "[info] Restarting in Nix..."
         export NIXIFIED=1
