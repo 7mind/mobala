@@ -94,6 +94,66 @@ function nixify() {
     fi
 }
 
+function invoke_quiet() {
+  { set +x; } > /dev/null 2>&1
+  name=$1
+  shift
+  $name $*
+  { [[ "${DO_VERBOSE}" == 1 ]] && set -x; } > /dev/null 2>&1
+}
+
+function invoke_verbose() {
+  name=$1
+  shift
+  { [[ "${DO_VERBOSE}" == 1 ]] && set -x; } > /dev/null 2>&1
+  $name $*
+  { set +x; } > /dev/null 2>&1
+}
+
+
+# Steps: begin ------------------------------------------------------------------------------------
+declare -a commands
+declare -A commands_to_run
+
+function step_register() {
+  invoke_quiet step_register_impl $1
+}
+function step_register_impl() {
+  commands+=($1)
+  varname="DO__$1"
+  enabled=${commands_to_run[$varname]:-0}
+  commands_to_run[$varname]=$enabled
+}
+
+function step_enable() {
+  varname="DO__$1"
+  commands_to_run[$varname]=1
+}
+
+function steps_report() {
+  echo "The following steps will run:"
+  for func in "${commands[@]}"; do
+    varname="DO__$func"
+    if [[ ${commands_to_run[$varname]} == 1 ]]; then
+        echo "[*] ${func}"
+    else
+        echo "[ ] ${func}"
+    fi
+  done
+}
+
+function steps_run() {
+  for func in "${commands[@]}"; do
+    varname="DO__$func"
+    if [[ ${commands_to_run[$varname]} == 1 ]]; then
+      invoke_verbose $func
+    fi
+  done
+}
+# Steps: end ------------------------------------------------------------------------------------
+
+
+
 script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
 
@@ -107,6 +167,7 @@ export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/params"}
 export LANG="C.UTF-8"
 export NIXIFIED=${NIXIFIED:-0}
 export DO_VERBOSE=${DO_VERBOSE:-0}
+export VERBOSE_LEVEL=${VERBOSE_LEVEL:-0}
 
 echo "[info] Script in '${script_path}'"
 echo "[info] Working in '${MOBALA_PATH}'."
@@ -134,6 +195,14 @@ while [[ $idx -lt $arguments_length ]] ; do
           idx=$((idx+1))
           set -x
           export DO_VERBOSE=1
+          export VERBOSE_LEVEL=1
+          ;;
+
+        -vv|--very-verbose)
+          idx=$((idx+1))
+          set -x
+          export DO_VERBOSE=1
+          export VERBOSE_LEVEL=2
           ;;
 
         -e|--env)
@@ -189,8 +258,7 @@ while [[ $idx -lt $arguments_length ]] ; do
     esac
 done
 
-# source default environment
 source "${MOBALA_ENV}"
-
-# run build
-run
+steps_register
+invoke_quiet steps_report
+invoke_quiet steps_run
