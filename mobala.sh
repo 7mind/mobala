@@ -4,25 +4,25 @@
 set -euo pipefail
 
 function add_prefix() {
-    prefix="$1"
+    local prefix="$1"
     while IFS= read -r line; do
         echo "${prefix}${line}"
     done
 }
 
 function echo-bold() {
-    bold=$(tput bold)
-    normal=$(tput sgr0)
+    local bold=$(tput bold)
+    local normal=$(tput sgr0)
     echo "${bold}$1${normal}"
 }
 
 function print-command-help() {
-    command="$1"
-    command_help="$2"
+    local command="$1"
+    local command_help="$2"
 
-    help_indent=$(printf "%*s" "${#command}" "")
-    help_head=$(echo "${command_help}" | sed -n "1p")
-    help_tail=$(echo "${command_help}" | sed -n "1!p" | add_prefix " ${help_indent}")
+    local help_indent=$(printf "%*s" "${#command}" "")
+    local help_head=$(echo "${command_help}" | sed -n "1p")
+    local help_tail=$(echo "${command_help}" | sed -n "1!p" | add_prefix " ${help_indent}")
     echo "$(echo-bold $command) ${help_head}"
     if [[ "${help_tail}" != "" ]]; then
       echo "${help_tail}"
@@ -35,7 +35,7 @@ function print-help() {
 
     if [[ -f "${MOBALA_ENV}" ]]; then
         echo-bold "Mobala environment (${MOBALA_ENV}):"
-        env_help=$(cat "${MOBALA_ENV}" | grep "#\[help\]" | sed -r 's/^#\[help\](.*)/\1/' || true)
+        local env_help=$(cat "${MOBALA_ENV}" | grep "#\[help\]" | sed -r 's/^#\[help\](.*)/\1/' || true)
         echo "${env_help}"
         echo
     fi
@@ -45,7 +45,7 @@ function print-help() {
     print-command-help "--verbose|-v" "Enable verbose logging for runner commands."
     print-command-help "--env|-e" 'Specify environment variable. Usage `-e PARAM=test`.'
     if [[ -d "${MOBALA_PARAMS}" ]]; then
-        params=($(ls -f $MOBALA_PARAMS | sort | grep ".sh" || true))
+        local params=($(ls -f $MOBALA_PARAMS | sort | grep ".sh" || true))
         for param in "${params[@]}"; do
             param_name="${param::-3}"
             param_help=$(cat "${MOBALA_PARAMS}/${param}" | grep "#\[help\]" | sed -r 's/^#\[help\](.*)/\1/' || true)
@@ -55,7 +55,7 @@ function print-help() {
 
     if [[ -d "${MOBALA_MODS}" ]]; then
         echo-bold "Mobala modes (${MOBALA_MODS}):"
-        mods=($(ls -f $MOBALA_MODS | sort | grep ".sh" || true))
+        local mods=($(ls -f $MOBALA_MODS | sort | grep ".sh" || true))
         for mode in "${mods[@]}"; do
             mode_name="${mode::-3}"
             mode_help=$(cat "${MOBALA_MODS}/${mode}" | grep "#\[help\]" | sed -r 's/^#\[help\](.*)/\1/' || true)
@@ -95,19 +95,21 @@ function nixify() {
 }
 
 function invoke_quiet() {
-  { set +x; } > /dev/null 2>&1
-  name=$1
+  { local IS_VERBOSE=1 ; } > /dev/null 2>&1
+  { [[ $- == *x* ]] && IS_VERBOSE=1 || IS_VERBOSE=0 ; } > /dev/null 2>&1
+  { set +x ; } > /dev/null 2>&1
+  local name=$1
   shift
   $name $*
-  { [[ "${DO_VERBOSE}" == 1 ]] && set -x; } > /dev/null 2>&1
+  { [[ "${IS_VERBOSE}" == 1 ]] && set -x || set +x ; } > /dev/null 2>&1
 }
 
 function invoke_verbose() {
-  name=$1
+  local name=$1
   shift
-  { [[ "${DO_VERBOSE}" == 1 ]] && set -x; } > /dev/null 2>&1
+  { [[ "${DO_VERBOSE}" == 1 ]] && set -x || set +x ; } > /dev/null 2>&1
   $name $*
-  { set +x; } > /dev/null 2>&1
+  { set +x ; } > /dev/null 2>&1
 }
 
 
@@ -115,25 +117,33 @@ function invoke_verbose() {
 declare -a commands
 declare -A commands_to_run
 
+function steps_register() {
+  for step in ${MOBALA_STEPS}/run-*.sh; do
+    local name=$(basename "${step%.*}")
+    source "${step}"
+    step_register $name
+  done
+}
+
 function step_register() {
-  invoke_quiet step_register_impl $1
+  step_register_impl $1
 }
 function step_register_impl() {
+  local varname="DO__$1"
+  local enabled=${commands_to_run[$varname]:-0}
   commands+=($1)
-  varname="DO__$1"
-  enabled=${commands_to_run[$varname]:-0}
   commands_to_run[$varname]=$enabled
 }
 
 function step_enable() {
-  varname="DO__$1"
+  local varname="DO__$1"
   commands_to_run[$varname]=1
 }
 
 function steps_report() {
   echo "The following steps will run:"
   for func in "${commands[@]}"; do
-    varname="DO__$func"
+    local varname="DO__$func"
     if [[ ${commands_to_run[$varname]} == 1 ]]; then
         echo "[*] ${func}"
     else
@@ -144,7 +154,7 @@ function steps_report() {
 
 function steps_run() {
   for func in "${commands[@]}"; do
-    varname="DO__$func"
+    local varname="DO__$func"
     if [[ ${commands_to_run[$varname]} == 1 ]]; then
       invoke_verbose $func
     fi
@@ -158,11 +168,13 @@ script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
 
 export MOBALA_PATH=${MOBALA_PATH:-"${script_dirname}"}
-export MOBALA_SUBDIR=${MOBALA_SUBDIR:-".mobala"}
-export MOBALA_KEEP=${MOBALA_KEEP:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/keep.env"}
-export MOBALA_ENV=${MOBALA_ENV:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/env.sh"}
-export MOBALA_MODS=${MOBALA_MODS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/mods"}
-export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/params"}
+export MOBALA_SUBDIR_NAME=${MOBALA_SUBDIR_NAME:-".mobala"}
+export MOBALA_SUBDIR=${MOBALA_SUBDIR:-"${MOBALA_PATH}/${MOBALA_SUBDIR_NAME}"}
+export MOBALA_KEEP=${MOBALA_KEEP:-"${MOBALA_SUBDIR}/keep.env"}
+export MOBALA_ENV=${MOBALA_ENV:-"${MOBALA_SUBDIR}/env.sh"}
+export MOBALA_MODS=${MOBALA_MODS:-"${MOBALA_SUBDIR}/mods"}
+export MOBALA_STEPS=${MOBALA_STEPS:-"${MOBALA_SUBDIR}/steps"}
+export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_SUBDIR}/params"}
 
 export LANG="C.UTF-8"
 export NIXIFIED=${NIXIFIED:-0}
@@ -258,7 +270,9 @@ while [[ $idx -lt $arguments_length ]] ; do
     esac
 done
 
+{ echo "Done processing arguments" ; } 2>/dev/null
+
 source "${MOBALA_ENV}"
-steps_register
+invoke_quiet steps_register
 invoke_quiet steps_report
 invoke_quiet steps_run
