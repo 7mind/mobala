@@ -114,8 +114,7 @@ function invoke_verbose() {
 
 
 # Steps: begin ------------------------------------------------------------------------------------
-declare -a commands
-declare -A commands_to_run
+declare -a MOBALA_COMMANDS
 
 function steps_register() {
   for step in ${MOBALA_STEPS}/run-*.sh; do
@@ -129,22 +128,26 @@ function step_register() {
   step_register_impl $1
 }
 function step_register_impl() {
-  local varname="DO__$1"
-  local enabled=${commands_to_run[$varname]:-0}
-  commands+=($1)
-  commands_to_run[$varname]=$enabled
+  local varname="DO__${1//-/_}"
+  local enabled=${!varname:-0}
+  MOBALA_COMMANDS+=($1)
+  #  eval "export $varname=$enabled"
+  declare -gx "${varname}=${enabled}"
+
 }
 
 function step_enable() {
-  local varname="DO__$1"
-  commands_to_run[$varname]=1
+  local varname="DO__${1//-/_}"
+  #  eval "export $varname=1"
+  declare -gx "${varname}=1"
+
 }
 
 function steps_report() {
   echo "The following steps will run:"
-  for func in "${commands[@]}"; do
-    local varname="DO__$func"
-    if [[ ${commands_to_run[$varname]} == 1 ]]; then
+  for func in "${MOBALA_COMMANDS[@]}"; do
+    local varname="DO__${func//-/_}"
+    if [[ "${!varname}" == 1 ]]; then
         echo "[*] ${func}"
     else
         echo "[ ] ${func}"
@@ -153,9 +156,9 @@ function steps_report() {
 }
 
 function steps_run() {
-  for func in "${commands[@]}"; do
-    local varname="DO__$func"
-    if [[ ${commands_to_run[$varname]} == 1 ]]; then
+  for func in "${MOBALA_COMMANDS[@]}"; do
+    local varname="DO__${func//-/_}"
+    if [[ "${!varname}" == 1 ]]; then
       invoke_verbose $func
     fi
   done
