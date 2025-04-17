@@ -63,6 +63,7 @@ function update-self(){
   if [[ "${CI:-false}" == "false" ]] ; then
     set -xe
     download-file "${MOBALA_BASE}/mobala-resolver.sh" "${script_path}"
+    chmod +x "${script_path}"
   fi
 }
 
