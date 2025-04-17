@@ -62,7 +62,7 @@ function verify-cache() {
 function update-self(){
   if [[ "${CI:-false}" == "false" ]] ; then
     set -xe
-    #download-file "${MOBALA_BASE}/mobala-resolver.sh" "${script_path}"
+    download-file "${MOBALA_BASE}/mobala-resolver.sh" "${script_path}"
   fi
 }
 
