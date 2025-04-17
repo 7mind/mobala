@@ -114,7 +114,16 @@ function invoke_verbose() {
 
 
 # Steps: begin ------------------------------------------------------------------------------------
-declare -a MOBALA_COMMANDS
+declare -a MOBALA_REG_COMMANDS
+declare -a MOBALA_REG_FLOWS
+
+function flows_register() {
+  for flow in ${MOBALA_FLOWS}/do-*.sh; do
+    local name=$(basename "${flow%.*}")
+    source "${flow}"
+    flow_register $name
+  done
+}
 
 function steps_register() {
   for step in ${MOBALA_STEPS}/run-*.sh; do
@@ -125,28 +134,50 @@ function steps_register() {
 }
 
 function step_register() {
-  step_register_impl $1
-}
-function step_register_impl() {
-  local varname="DO__${1//-/_}"
+  local varname="RUN__${1//-/_}"
   local enabled=${!varname:-0}
-  MOBALA_COMMANDS+=($1)
+  MOBALA_REG_COMMANDS+=($1)
   #  eval "export $varname=$enabled"
   declare -gx "${varname}=${enabled}"
-
 }
 
-function step_enable() {
-  local varname="DO__${1//-/_}"
+function flow_register() {
+  echo "Will register $1"
+  local varname="RUNFLOW__${1//-/_}"
+  local enabled=${!varname:-0}
+  MOBALA_REG_FLOWS+=($1)
+  #  eval "export $varname=$enabled"
+  declare -gx "${varname}=${enabled}"
+}
+
+function flow_enable() {
+  local varname="RUNFLOW__${1//-/_}"
   #  eval "export $varname=1"
   declare -gx "${varname}=1"
+}
 
+
+function step_enable() {
+  local varname="RUN__${1//-/_}"
+  #  eval "export $varname=1"
+  declare -gx "${varname}=1"
 }
 
 function steps_report() {
-  echo "The following steps will run:"
-  for func in "${MOBALA_COMMANDS[@]}"; do
-    local varname="DO__${func//-/_}"
+  echo "${MOBALA_REG_FLOWS[@]}"
+  echo "The following flows will run:"
+  for func in "${MOBALA_REG_FLOWS[@]}"; do
+    local varname="RUNFLOW__${func//-/_}"
+    if [[ "${!varname}" == 1 ]]; then
+        echo "[*] ${func}"
+    else
+        echo "[ ] ${func}"
+    fi
+  done
+
+  echo "The following steps may run:"
+  for func in "${MOBALA_REG_COMMANDS[@]}"; do
+    local varname="RUN__${func//-/_}"
     if [[ "${!varname}" == 1 ]]; then
         echo "[*] ${func}"
     else
@@ -155,13 +186,21 @@ function steps_report() {
   done
 }
 
-function steps_run() {
-  for func in "${MOBALA_COMMANDS[@]}"; do
-    local varname="DO__${func//-/_}"
+function flows_run() {
+  for func in "${MOBALA_REG_FLOWS[@]}"; do
+    local varname="RUNFLOW__${func//-/_}"
     if [[ "${!varname}" == 1 ]]; then
       invoke_verbose $func
     fi
   done
+}
+
+function step_run_cond() {
+  func=$1
+  local varname="RUN__${func//-/_}"
+  if [[ "${!varname}" == 1 ]]; then
+    invoke_verbose $func
+  fi
 }
 # Steps: end ------------------------------------------------------------------------------------
 
@@ -177,6 +216,7 @@ export MOBALA_KEEP=${MOBALA_KEEP:-"${MOBALA_SUBDIR}/keep.env"}
 export MOBALA_ENV=${MOBALA_ENV:-"${MOBALA_SUBDIR}/env.sh"}
 export MOBALA_MODS=${MOBALA_MODS:-"${MOBALA_SUBDIR}/mods"}
 export MOBALA_STEPS=${MOBALA_STEPS:-"${MOBALA_SUBDIR}/steps"}
+export MOBALA_FLOWS=${MOBALA_FLOWS:-"${MOBALA_SUBDIR}/flows"}
 export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_SUBDIR}/params"}
 
 export LANG="C.UTF-8"
@@ -275,7 +315,9 @@ done
 
 { echo "Done processing arguments" ; } 2>/dev/null
 
-source "${MOBALA_ENV}"
+source "${MOBALA_ENV}" $*
+
 invoke_quiet steps_register
+invoke_quiet flows_register
 invoke_quiet steps_report
-invoke_quiet steps_run
+invoke_quiet flows_run
