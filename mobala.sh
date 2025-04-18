@@ -261,7 +261,7 @@ while [[ $idx -lt $arguments_length ]] ; do
           ;;
 
         -e|--env)
-          arg="${arguments[$((idx+1))]}"
+          local arg="${arguments[$((idx+1))]}"
           idx=$((idx+2))
           export "$(echo "${arg}" | xargs)"
           ;;
@@ -282,7 +282,7 @@ while [[ $idx -lt $arguments_length ]] ; do
           idx=$((idx+1))
 
           # apply build parameter
-          build_param="${arg:2}"
+          local build_param="${arg:2}"
           if [[ -f "${MOBALA_PARAMS}/$build_param.sh" ]]; then
               echo "[info] Applying build parameter: $build_param"
               function run-param() { source "${MOBALA_PARAMS}/$build_param.sh" ; } ; run-param
@@ -293,8 +293,8 @@ while [[ $idx -lt $arguments_length ]] ; do
             idx=$((idx+1))
 
             # parse build mode arguments
-            build_mode="${arg:1}"
-            build_mode_args=()
+            local build_mode="${arg:1}"
+            local build_mode_args=()
             while [[ $idx -lt $arguments_length ]] && ! [[ "${arguments[idx]}" =~ ^:.* ]] ; do
                 build_mode_args+=("${arguments[idx]}")
                 idx=$((idx+1))
@@ -304,6 +304,9 @@ while [[ $idx -lt $arguments_length ]] ; do
             if [[ -f "${MOBALA_MODS}/$build_mode.sh" ]]; then
                 echo "[info] Applying mode $build_mode: '${MOBALA_MODS}/$build_mode.sh ${build_mode_args[*]}'"
                 function run-mode() { source "${MOBALA_MODS}/$build_mode.sh" "${build_mode_args[@]}" ; } ; run-mode
+            else
+                echo "[info] There is no launcher file for $build_mode, activating step run-${build_mode}"
+                step_enable "run-${build_mode}"
             fi
             ;;
 
