@@ -261,7 +261,7 @@ while [[ $idx -lt $arguments_length ]] ; do
           ;;
 
         -e|--env)
-          local arg="${arguments[$((idx+1))]}"
+          arg="${arguments[$((idx+1))]}"
           idx=$((idx+2))
           export "$(echo "${arg}" | xargs)"
           ;;
@@ -282,7 +282,7 @@ while [[ $idx -lt $arguments_length ]] ; do
           idx=$((idx+1))
 
           # apply build parameter
-          local build_param="${arg:2}"
+          build_param="${arg:2}"
           if [[ -f "${MOBALA_PARAMS}/$build_param.sh" ]]; then
               echo "[info] Applying build parameter: $build_param"
               function run-param() { source "${MOBALA_PARAMS}/$build_param.sh" ; } ; run-param
@@ -293,8 +293,8 @@ while [[ $idx -lt $arguments_length ]] ; do
             idx=$((idx+1))
 
             # parse build mode arguments
-            local build_mode="${arg:1}"
-            local build_mode_args=()
+            build_mode="${arg:1}"
+            build_mode_args=()
             while [[ $idx -lt $arguments_length ]] && ! [[ "${arguments[idx]}" =~ ^:.* ]] ; do
                 build_mode_args+=("${arguments[idx]}")
                 idx=$((idx+1))
