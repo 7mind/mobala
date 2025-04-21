@@ -223,6 +223,11 @@ function step_run_cond() {
 # modules: end ------------------------------------------------------------------------------------
 
 # jvm: begin --------------------------------------------------------------------------------------
+function set_jdk_path() {
+    local JDK_VERSION_VAR="JDK${JAVA_VERSION}"
+    export JAVA_HOME="${!JDK_VERSION_VAR}"
+    export PATH=$JAVA_HOME/bin:$PATH
+}
 function set_jvm_options() {
     export _JAVA_OPTIONS="${_JAVA_OPTIONS:-""}"
 
