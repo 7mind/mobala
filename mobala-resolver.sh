@@ -10,7 +10,7 @@ export MOBALA_CACHE_LIB="${CACHE_DIR}/mobala-lib.sh"
 export MOBALA_VERSION=$(read_trimmed_string ".mobala/version.txt" "release")
 export MOBALA_BASE="https://raw.githubusercontent.com/7mind/mobala/refs/heads/${MOBALA_VERSION}"
 export MOBALA_FILE="${MOBALA_BASE}/mobala.sh"
-export MOBALA_LIB_ILE="${MOBALA_BASE}/mobala-lib.sh"
+export MOBALA_LIB_FILE="${MOBALA_BASE}/mobala-lib.sh"
 
 script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
