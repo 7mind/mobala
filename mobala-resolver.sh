@@ -24,9 +24,9 @@ export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/params"}
 
 function check-cache() {
     if [[ -f "${MOBALA_CACHE_MAIN}" && -f "${MOBALA_CACHE_LIB}" ]]; then
-        echo "[info] mobala.sh cache found at '${MOBALA_CACHE}'"
+        echo "[info] mobala.sh cache found at '${MOBALA_CACHE_MAIN}'"
     else
-        echo "[info] mobala.sh cache not found at '${MOBALA_CACHE}'"
+        echo "[info] mobala.sh cache not found at '${MOBALA_CACHE_MAIN}'"
     fi
 }
 
@@ -79,4 +79,4 @@ check-cache
 update-cache
 verify-cache
 
-bash "${MOBALA_CACHE}" "$@"
+bash "${MOBALA_CACHE_MAIN}" "$@"
