@@ -22,7 +22,7 @@ export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_SUBDIR}/params"}
 export LANG="C.UTF-8"
 export VERBOSE_LEVEL=${VERBOSE_LEVEL:-0}
 
-source "${mobala_dirname}/mobala-lib.sh"
+source "${script_dirname}/mobala-lib.sh"
 
 echo "[info] Working in '${MOBALA_PATH}'."
 cd "$MOBALA_PATH"
