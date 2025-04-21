@@ -11,7 +11,9 @@ export MOBALA_VERSION=$(read_trimmed_string ".mobala/version.txt" "release")
 export MOBALA_BASE="https://raw.githubusercontent.com/7mind/mobala/refs/heads/${MOBALA_VERSION}"
 export MOBALA_FILE="${MOBALA_BASE}/mobala.sh"
 export MOBALA_LIB_FILE="${MOBALA_BASE}/mobala-lib.sh"
-export SELF_UPDATE=${SELF_UPDATE:-1}
+export MOBALA_SELF_UPDATE=${MOBALA_SELF_UPDATE:-1}
+export MOBALA_CACHE_UPDATE=${MOBALA_CACHE_UPDATE:-1}
+
 script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
 
@@ -50,8 +52,10 @@ function download-file() {
 
 
 function update-cache() {
-    download-file "${MOBALA_LIB_FILE}" "${MOBALA_CACHE_LIB}"
-    download-file "${MOBALA_FILE}" "${MOBALA_CACHE_MAIN}"
+    if [[ "${MOBALA_SELF_UPDATE}" == 1 ]] ; then
+        download-file "${MOBALA_LIB_FILE}" "${MOBALA_CACHE_LIB}"
+        download-file "${MOBALA_FILE}" "${MOBALA_CACHE_MAIN}"
+    fi
 }
 
 function verify-cache() {
@@ -66,7 +70,7 @@ function verify-cache() {
 }
 
 function update-self(){
-  if [[ "${CI:-false}" == "false" && "${SELF_UPDATE}" == 1 ]] ; then
+  if [[ "${CI:-false}" == "false" && "${MOBALA_SELF_UPDATE}" == 1 ]] ; then
     set -xe
     download-file "${MOBALA_BASE}/mobala-resolver.sh" "${script_path}"
     chmod +x "${script_path}"
