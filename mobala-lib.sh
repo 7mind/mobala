@@ -241,7 +241,18 @@ function set_jvm_options() {
 }
 
 function set_jvm_optimizations() {
-
+    local JAVA_OPTIMIZATIONS="
+    $(echo "${_JAVA_OPTIONS}" | grep -v '#' | tr '\n' ' ' | tr -s ' ')
+    # JVM ignores HOME and relies on getpwuid to determine home directory
+    # That fails when we run self-hosted github agent under non-dynamic user
+    # We need that for rootless docker to work
+    -Duser.home=${HOME}
+    -Xmx4000M
+    -XX:ReservedCodeCacheSize=384M
+    -XX:NonProfiledCodeHeapSize=256M
+    -XX:MaxMetaspaceSize=1024M
+    "
+    _JAVA_OPTIONS="$(echo "${JAVA_OPTIMIZATIONS}" | grep -v '#' | tr '\n' ' ' | tr -s ' ')"
 }
 
 function set_scala_variables() {
