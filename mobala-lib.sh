@@ -239,6 +239,34 @@ function set_jvm_options() {
     # Format Java Options
     _JAVA_OPTIONS="$(echo "${_JAVA_OPTIONS}" | grep -v '#' | tr '\n' ' ' | tr -s ' ')"
 }
+
+function set_jvm_optimizations() {
+
+}
+
+function set_scala_variables() {
+    [[ -z "${SCALA_VERSION+x}" ]] && echo "Missing SCALA_VERSION" && exit 1
+    export VERSION_COMMAND="++ $SCALA_VERSION"
+}
+
+function set_scala_sbtgen_variables() {
+    replacement="build.${CI_BUILD_UNIQ_SUFFIX}"
+    export PROJECT_VERSION=$(cat version.sbt | sed -r 's/.*\"(.*)\".**/\1/' | sed -E "s/SNAPSHOT/${replacement}/")
+
+    export SCALA212=$(cat project/Deps.sc | grep 'val scala212 ' |  sed -r 's/.*\"(.*)\".**/\1/')
+    export SCALA213=$(cat project/Deps.sc | grep 'val scala213 ' |  sed -r 's/.*\"(.*)\".**/\1/')
+    export SCALA3=$(cat project/Deps.sc | grep 'val scala300 ' |  sed -r 's/.*\"(.*)\".**/\1/')
+
+    case $SCALA_VERSION in
+    2.12) SCALA_VERSION="$SCALA212" ;;
+    2.13) SCALA_VERSION="$SCALA213" ;;
+    3) SCALA_VERSION="$SCALA3" ;;
+    *) ;;
+    esac
+
+    export SCALA_VERSION="$SCALA_VERSION"
+    set_scala_variables
+}
 # jvm: end ----------------------------------------------------------------------------------------
 
 # github: begin ------------------------------------------------------------------------------------
