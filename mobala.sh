@@ -5,8 +5,8 @@ set -euo pipefail
 
 script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
-mobala_dirname="$(dirname "$BASH_SOURCE")"
-echo "[info] Library in '${mobala_dirname}'"
+# mobala_dirname="$(dirname "$BASH_SOURCE")"
+echo "[info] Library in '${script_dirname}'"
 echo "[info] Script in '${script_path}'"
 
 export MOBALA_PATH=${MOBALA_PATH:-"${script_dirname}"}
