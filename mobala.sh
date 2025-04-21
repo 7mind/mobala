@@ -5,6 +5,7 @@ set -euo pipefail
 
 script_path="$(realpath "$0")"
 script_dirname="$(dirname "$script_path")"
+mobala_dirname="$(dirname "$BASH_SOURCE")"
 
 export MOBALA_PATH=${MOBALA_PATH:-"${script_dirname}"}
 export MOBALA_SUBDIR_NAME=${MOBALA_SUBDIR_NAME:-".mobala"}
@@ -19,8 +20,9 @@ export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_SUBDIR}/params"}
 export LANG="C.UTF-8"
 export VERBOSE_LEVEL=${VERBOSE_LEVEL:-0}
 
-source "${MOBALA_PATH}/mobala-lib.sh"
+source "${mobala_dirname}/mobala-lib.sh"
 
+echo "[info] Library in '${mobala_dirname}'"
 echo "[info] Script in '${script_path}'"
 echo "[info] Working in '${MOBALA_PATH}'."
 cd "$MOBALA_PATH"
