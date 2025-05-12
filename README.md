@@ -1,27 +1,98 @@
 # Modular Bash Launcher
 
-Module based Bash script launcher or Mobala!
+Modular Bash Launcher or Mobala! Comes with Nix Flake support.
 
-## Using resolver:
+This project is a simple way to create modular Bash scripts useful in various CI workflows.
 
-Copy [mobala-resolver.sh](./mobala-resolver.sh) content to the file in the root of your project (eg `./run`).
-Execute with `./run --verbose --nix --param :my-mode`.
+It allows you to define a Bash functions (called "Flows") consisting of several "Steps" (which also are Bash functions).
+Each Step can have its own arguments and parameters and can be explicitly enabled or disabled before Flow execution.
 
-That's it! You are ready to write your modular Bash script!
+[mobala-resolver.sh](./mobala-resolver.sh) is the primary entrypoint which is responsible for maintaining an up-to-date local
+copy of the main script.
 
-## Mobala project structure:
+## Setting things up
 
-Mobala project have four environment variables, specifying at where to lookup execution scripts:
+1. Copy [mobala-resolver.sh](./mobala-resolver.sh) into the root directory of your project with a name up to your liking, e.g. `./run`.
+2. Create executable `.mobala/env.sh` file, define all the shared environment variables there, that file is sourced before Flows start being processed.
+3. Create a flow in `.mobala/flows/` directory
+3. Create a step in `.mobala/steps/` directory
 
-* `MOBALA_KEEP` - file with the list of all environment variables that should be preserved in Nix environment (default
-  `$(pwd)/mobala/keep.env`);
-* `MOBALA_ENV` - bash script to setup execution environment (default `$(pwd)/mobala/env.sh`);
-* `MOBALA_MODS` - directory of shell scripts to modify environment (default `$(pwd)/mobala/mods`);
-* `MOBALA_PARAMS` - directory of shell scripts to pass parameters to environment (default `$(pwd)/mobala/params`).
+Launch the entrypoint with `./run --verbose --nix --param :my-mode`.
 
-`MOBALA_ENV` environment setup shell script will be sourced after execution environment is prepared.
-Mobala executor expects `run` function to be sourced and ready to be executed after `MOBALA_ENV` sourcing.
-`run` function is a main entrypoint of all project.
+Read below for more details.
+
+## Defining Flows
+
+Each Flow is defined in a separate file in `.mobala/flows` directory. The name of the file is the name of the Flow with prefix `do-`. For example, `do-build`. Each Flow file should have a Flow Definition, which is a function with the same name as the Flow file. Each Flow Definition should refer Steps using `step_run_cond` function, for example
+
+```bash
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+function do-build() {
+    step_run_cond run-compile
+    step_run_cond run-test
+}
+```
+
+It's up to user to process the script arguments and decide which Flows should be executed when the script launches, it's done in `.mobala/env.sh`
+
+In order to mark Flow for execution, the user should call `flow_enable` function, for example:
+
+```bash
+flow_enable do-build
+```
+
+## Defining Steps
+
+Each Step is defined in a separate file in `.mobala/steps` directory. The name of the file is the name of the Step with prefix `run-`. For example, `run-test`. Each Step file should have a Step Definition, which is a function with the same name as the Step file. Each Step Definition is just an arbitrary Bash function, for example:
+
+```bash
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+function run-hello-world() {
+    if [[ "${DO_HELLO_WORLD_NAME}" != "" ]]; then
+        echo "Hello, ${DO_HELLO_WORLD_NAME}!"
+    else
+        echo "Hello, World!"
+    fi
+}
+```
+
+### Parsing Step Arguments
+
+All the steps are disabled by default. In order to enable a step, we should define a commandline parser, which is a script in `.mobala/mods` directory. The name of the parser file might be arbitrary.
+
+Mobala parses its command line and separate it by strings prefixed with `:`, everything what comes after it will be passed to the parser with matching name.
+
+For example, if the user launches Mobala with parameters `:say-hello --name=John Doe :say-bye`, Mobala will run script named `.mobala/mods/say-hello.sh` passing `--name=John Doe` to it and then will run `.mobala/mods/say-bye.sh`. Everything what comes before first `:` argument is treated as a global argument and can be processed by `env.sh`.
+
+The parser scripts may enable steps by calling `step_enable` and define various environment variables, for example:
+
+```bash
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+#[help]Print hello world:
+#[help]--name=<name> to set user name (or `-n=<name>`).
+
+step_enable run-hello-world
+
+for arg in "$@" ; do case $arg in
+    -n=*|--name=*)
+        export DO_HELLO_WORLD_NAME="${arg#*=}"
+        ;;
+    *)
+        ;;
+esac done
+```
+
+All the commented lines starting with `#[help]` will be treated as documentation and visible in `--help` output.
+
 
 ## Mobala builtin commands:
 
@@ -29,58 +100,7 @@ Mobala executor expects `run` function to be sourced and ready to be executed af
 * `--nix` to shift script execution to `nix develop` shell, using local `flake.nix` definition;
 * `--verbose` or `-v` to enable verbose logging;
 * `--env PARAM=123` or `-e PARAM=123` to specify environment variable (should be specified AFTER `--nix` option, or
-  environment might be lost during execution)
-
-## Writing your script:
-
-There is two ways of adding a script:
-
-1. Add script file to `${MOBALA_MODS}/my-script.sh`, run it with `./run :my-script`
-2. Add mode file to `${MOBALA_MODS}/my-script.sh` to set up script execution:
-
-```shell
-#!/usr/bin/env bash
-
-set -euo pipefail
-if [[ "${DO_VERBOSE}" == 1 ]] ; then set -x ; fi
-
-#[help]Print foo, using provided parameters.
-
-export DO_MY_SCRIPT=1
-```
-
-Update `run` command in `MOBALA_ENV` to execute your script if `"${DO_MY_SCRIPT}" == 1`.
-
-Example:
-
-* Mode environment setup - [hello-world.sh](./mobala/mods/hello-world.sh);
-* Mode script - [run-hello-world.sh](./mobala/scripts/run/hello-world.sh);
-* Runner - [run.sh](./mobala/scripts/run.sh).
-
-## Adding parameters to your script
-
-Mobala launcher will automatically parse and pass all CLI arguments from original CLI string to mode script.
-Arguments parsing should be handled by the mode itself.
-
-Example: [hello-world.sh](./mobala/mods/hello-world.sh) - run with
-`./mobala-resolver.sh :hello-world --name="John Doe"`.
-
-## Running your script
-
-Mobala launcher will parse CLI arguments, with the following syntax:
-
-* `--param` - to specify global parameter (should be set before first mode)
-* `:mode -p1 --mode-arg=foo --param` - to apply execution mode and specify its parameters.
-
-Arguments and modes might be combined in any form:
-
-```shell
-./mobala-resolver.sh \
-  --global-parameter \
-  --global-parameter-2=foo \
-  :mode-1 --mode-1-param --mode-1-arg=John \
-  :mode-2 --mode-2-param --mode-2-arg=Doe
-```
+  environment will be lost after switching into Nix)
 
 ## Adding global parameters
 
