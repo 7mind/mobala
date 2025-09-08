@@ -64,9 +64,6 @@ function nixify() {
     local last_arg="${func_args[$last_index]}"
     local dev_shell=".#$last_arg"
 
-    echo "Dev Shell: "
-    echo $dev_shell
-
     if [[ -z "${IN_NIX_SHELL+x}" ]]; then
         echo "[info] Restarting in Nix..."
         export NIXIFIED=1
