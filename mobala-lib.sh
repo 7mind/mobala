@@ -60,13 +60,12 @@ function nixify() {
     read -r -a args <<< "$(grep -v '^\s*$' $MOBALA_KEEP | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
 
     local func_args=("$@")
-    local dev_shell=".#default"
     local last_index=$(( ${#func_args[@]} - 1 ))
     local last_arg="${func_args[$last_index]}"
+    local dev_shell=".#$last_arg"
 
-    if [[ -n "$last_arg" ]]; then 
-      dev_shell=".#$last_arg"
-    fi  
+    echo "Dev Shell: "
+    echo $dev_shell
 
     if [[ -z "${IN_NIX_SHELL+x}" ]]; then
         echo "[info] Restarting in Nix..."

@@ -36,7 +36,7 @@ while [[ $idx -lt $arguments_length ]] ; do
     case "$arg" in
         --nix)
           idx=$((idx+1))
-          shift && nixify "$@" ""
+          shift && nixify "$@" "default"
           ;;
 
         --nix=*)
