@@ -59,12 +59,22 @@ export NIXIFIED=${NIXIFIED:-0}
 function nixify() {
     read -r -a args <<< "$(grep -v '^\s*$' $MOBALA_KEEP | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
 
+    local func_args=("$@")
+    local dev_shell=".#default"
+    local last_index=$(( ${#func_args[@]} - 1 ))
+    local last_arg="${func_args[$last_index]}"
+
+    if [[ -n "$last_arg" ]]; then 
+      dev_shell=".#$last_arg"
+    fi  
+
     if [[ -z "${IN_NIX_SHELL+x}" ]]; then
         echo "[info] Restarting in Nix..."
         export NIXIFIED=1
         nix flake lock
         nix flake metadata
         exec nix develop \
+          $dev_shell \
           --ignore-environment \
           --keep HOME \
           --keep NIXIFIED \
