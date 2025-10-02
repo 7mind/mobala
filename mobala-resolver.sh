@@ -32,8 +32,7 @@ if [[ "${MOBALA_UPDATE}" == 0 && -f ".mobala/version-commit.lock" ]]; then
   fi
 else
   echo "[info] updating mobala lock, downloading updated commit for remote ref \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\`"
-  MOBALA_LOCK_COMMIT="${MOBALA_REMOTE_LATEST_COMMIT}"
-  export MOBALA_LOCK_COMMIT
+  export MOBALA_LOCK_COMMIT="${MOBALA_REMOTE_LATEST_COMMIT}"
   printf '%s' "${MOBALA_LOCK_COMMIT}" > ".mobala/version-commit.lock"
   echo "[info] updated mobala lock to commit ${MOBALA_LOCK_COMMIT} which is the latest commit for ${MOBALA_REMOTE_LOCK_SOURCE_REF}"
 fi
