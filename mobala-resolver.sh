@@ -19,7 +19,7 @@ MOBALA_REMOTE_LOCK_SOURCE_REF=$(read_trimmed_string ".mobala/version.txt" "relea
 export MOBALA_REMOTE_LOCK_SOURCE_REF
 export MOBALA_REMOTE_GET_COMMIT_URL="https://api.github.com/repos/7mind/mobala/commits/${MOBALA_REMOTE_LOCK_SOURCE_REF}"
 
-MOBALA_REMOTE_LATEST_COMMIT=$(get_commit_of_remote_ref "${MOBALA_REMOTE_GET_COMMIT_URL}")
+MOBALA_REMOTE_LATEST_COMMIT=$(get_commit_of_remote_ref "${MOBALA_REMOTE_GET_COMMIT_URL}" || echo 0)
 export MOBALA_REMOTE_LATEST_COMMIT
 
 if [[ "${MOBALA_UPDATE}" == 0 && -f ".mobala/version-commit.lock" ]]; then
@@ -27,11 +27,15 @@ if [[ "${MOBALA_UPDATE}" == 0 && -f ".mobala/version-commit.lock" ]]; then
   export MOBALA_LOCK_COMMIT
   export MOBALA_REMOTE_VERSION="${MOBALA_LOCK_COMMIT}"
   echo "[info] running mobala branch \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\` commit ${MOBALA_LOCK_COMMIT}"
-  if [[ "${MOBALA_REMOTE_LATEST_COMMIT}" != "${MOBALA_LOCK_COMMIT}" ]]; then
+  if [[ "${MOBALA_REMOTE_LATEST_COMMIT}" != 0 && "${MOBALA_REMOTE_LATEST_COMMIT}" != "${MOBALA_LOCK_COMMIT}" ]]; then
     echo "[info] new version of mobala is available. run with MOBALA_UPDATE=1 to update to latest commit ${MOBALA_REMOTE_LATEST_COMMIT}"
   fi
 else
   echo "[info] updating mobala lock, downloading updated commit for remote ref \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\`"
+  if [[ "${MOBALA_REMOTE_LATEST_COMMIT}" == 0 ]]; then
+    echo "[error] couldn't fetch latest mobala commit from ${MOBALA_REMOTE_GET_COMMIT_URL} due to network error"
+    exit 1
+  fi
   export MOBALA_LOCK_COMMIT="${MOBALA_REMOTE_LATEST_COMMIT}"
   printf '%s' "${MOBALA_LOCK_COMMIT}" > ".mobala/version-commit.lock"
   echo "[info] updated mobala lock to commit ${MOBALA_LOCK_COMMIT} which is the latest commit for ${MOBALA_REMOTE_LOCK_SOURCE_REF}"
