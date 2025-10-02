@@ -6,7 +6,7 @@ set -euo pipefail
 
 export MOBALA_UPDATE=${MOBALA_UPDATE:-0}
 export MOBALA_SELF_UPDATE=${MOBALA_SELF_UPDATE:-1}
-export MOBALA_CACHE_FORCE_UPDATE=${MOBALA_CACHE_FORCE_UPDATE:-1}
+export MOBALA_CACHE_FORCE_UPDATE=${MOBALA_CACHE_FORCE_UPDATE:-0}
 
 read_trimmed_string() { [[ -s "$1" ]] && sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$1" || echo "$2"; }
 
