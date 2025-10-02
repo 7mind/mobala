@@ -6,7 +6,7 @@ set -euo pipefail
 
 export MOBALA_UPDATE=${MOBALA_UPDATE:-0}
 export MOBALA_SELF_UPDATE=${MOBALA_SELF_UPDATE:-1}
-export MOBALA_CACHE_UPDATE=${MOBALA_CACHE_UPDATE:-1}
+export MOBALA_CACHE_FORCE_UPDATE=${MOBALA_CACHE_FORCE_UPDATE:-1}
 
 read_trimmed_string() { [[ -s "$1" ]] && sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$1" || echo "$2"; }
 
@@ -71,11 +71,12 @@ function check-cache() {
         echo "[info] mobala.sh cache found at '${MOBALA_CACHE_MAIN}'"
     else
         echo "[info] mobala.sh cache not found at '${MOBALA_CACHE_MAIN}'"
+        export MOBALA_CACHE_STALE=1
     fi
 }
 
 function update-cache() {
-    if [[ "${MOBALA_CACHE_UPDATE}" == 1 ]] ; then
+    if [[ "${MOBALA_CACHE_FORCE_UPDATE}" == 1 || "${MOBALA_CACHE_STALE}" == 1 ]] ; then
         download-file "${MOBALA_REMOTE_LIB_FILE}" "${MOBALA_CACHE_LIB}"
         download-file "${MOBALA_REMOTE_MAIN_FILE}" "${MOBALA_CACHE_MAIN}"
         download-file "${MOBALA_REMOTE_RESOLVER_FILE}" "${MOBALA_CACHE_RESOLVER}"
