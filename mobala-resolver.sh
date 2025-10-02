@@ -2,8 +2,9 @@
 
 set -euo pipefail
 
-# run wih `MOBALA_UPDATE_LOCK=1 ./run` to update lock file
-export MOBALA_UPDATE_LOCK=${MOBALA_UPDATE_LOCK:-0}
+# run wih `MOBALA_UPDATE=1 ./run` to update commit lock file
+
+export MOBALA_UPDATE=${MOBALA_UPDATE:-0}
 export MOBALA_SELF_UPDATE=${MOBALA_SELF_UPDATE:-1}
 export MOBALA_CACHE_UPDATE=${MOBALA_CACHE_UPDATE:-1}
 
@@ -13,10 +14,11 @@ MOBALA_REMOTE_LOCK_SOURCE_REF=$(read_trimmed_string ".mobala/version.txt" "relea
 export MOBALA_REMOTE_LOCK_SOURCE_REF
 export MOBALA_REMOTE_GET_COMMIT_URL="https://api.github.com/repos/7mind/mobala/commits/${MOBALA_REMOTE_LOCK_SOURCE_REF}"
 
-if [[ "${MOBALA_UPDATE_LOCK}" == 0 && -f ".mobala/version-commit.lock" ]]; then
+if [[ "${MOBALA_UPDATE}" == 0 && -f ".mobala/version-commit.lock" ]]; then
   MOBALA_LOCK_COMMIT=$(cat ".mobala/version-commit.lock")
   export MOBALA_LOCK_COMMIT
   export MOBALA_REMOTE_VERSION="$MOBALA_LOCK_COMMIT"
+  echo "[info] running mobala branch \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\` commit ${MOBALA_LOCK_COMMIT}"
 else
   echo "[info] updating mobala lock, downloading updated commit for remote ref \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\`"
   MOBALA_LOCK_COMMIT=$(curl "${MOBALA_REMOTE_GET_COMMIT_URL}" | grep -m 1 '\"sha\":' | sed -r 's/.*\"sha\":.*?\"(.*?)\".*/\1/')
