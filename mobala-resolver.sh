@@ -10,19 +10,29 @@ export MOBALA_CACHE_FORCE_UPDATE=${MOBALA_CACHE_FORCE_UPDATE:-0}
 
 read_trimmed_string() { [[ -s "$1" ]] && sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$1" || echo "$2"; }
 
+function get_commit_of_remote_ref() {
+  curl -sLJ0 -H 'Cache-Control: no-cache, no-store' -w "%{response_code}" "$1" \
+    | grep -m 1 '\"sha\":' | sed -r 's/.*\"sha\":.*?\"(.*?)\".*/\1/';
+}
+
 MOBALA_REMOTE_LOCK_SOURCE_REF=$(read_trimmed_string ".mobala/version.txt" "release")
 export MOBALA_REMOTE_LOCK_SOURCE_REF
 export MOBALA_REMOTE_GET_COMMIT_URL="https://api.github.com/repos/7mind/mobala/commits/${MOBALA_REMOTE_LOCK_SOURCE_REF}"
 
+MOBALA_REMOTE_LATEST_COMMIT=$(get_commit_of_remote_ref "${MOBALA_REMOTE_LOCK_SOURCE_REF}")
+export MOBALA_REMOTE_LATEST_COMMIT
+
 if [[ "${MOBALA_UPDATE}" == 0 && -f ".mobala/version-commit.lock" ]]; then
   MOBALA_LOCK_COMMIT=$(cat ".mobala/version-commit.lock")
   export MOBALA_LOCK_COMMIT
-  export MOBALA_REMOTE_VERSION="$MOBALA_LOCK_COMMIT"
+  export MOBALA_REMOTE_VERSION="${MOBALA_LOCK_COMMIT}"
   echo "[info] running mobala branch \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\` commit ${MOBALA_LOCK_COMMIT}"
+  if [[ "${MOBALA_REMOTE_LATEST_COMMIT}" != "${MOBALA_LOCK_COMMIT}" ]]; then
+    echo "[info] new version of mobala is available. run with MOBALA_UPDATE=1 to update to latest commit ${MOBALA_REMOTE_LATEST_COMMIT}"
+  fi
 else
   echo "[info] updating mobala lock, downloading updated commit for remote ref \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\`"
-  MOBALA_LOCK_COMMIT=$(curl -sLJ0 -H 'Cache-Control: no-cache, no-store' -w "%{response_code}" "${MOBALA_REMOTE_GET_COMMIT_URL}" \
-                      | grep -m 1 '\"sha\":' | sed -r 's/.*\"sha\":.*?\"(.*?)\".*/\1/')
+  MOBALA_LOCK_COMMIT="${MOBALA_REMOTE_LATEST_COMMIT}"
   export MOBALA_LOCK_COMMIT
   printf '%s' "${MOBALA_LOCK_COMMIT}" > ".mobala/version-commit.lock"
   echo "[info] updated mobala lock to commit ${MOBALA_LOCK_COMMIT} which is the latest commit for ${MOBALA_REMOTE_LOCK_SOURCE_REF}"
