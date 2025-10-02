@@ -76,7 +76,7 @@ function check-cache() {
 }
 
 function update-cache() {
-    if [[ "${MOBALA_CACHE_FORCE_UPDATE}" == 1 || "${MOBALA_CACHE_STALE}" == 1 ]] ; then
+    if [[ "${MOBALA_CACHE_FORCE_UPDATE}" == 1 || "${MOBALA_CACHE_STALE:-0}" == 1 ]] ; then
         download-file "${MOBALA_REMOTE_LIB_FILE}" "${MOBALA_CACHE_LIB}"
         download-file "${MOBALA_REMOTE_MAIN_FILE}" "${MOBALA_CACHE_MAIN}"
         download-file "${MOBALA_REMOTE_RESOLVER_FILE}" "${MOBALA_CACHE_RESOLVER}"
