@@ -26,12 +26,12 @@ else
 fi
 
 export SYS_CACHE_DIR="${XDG_CACHE_HOME:-"${HOME}/.cache"}"
-export CACHE_DIR="${SYS_CACHE_DIR%/}/${MOBALA_LOCK_COMMIT}"
+export CACHE_DIR="${SYS_CACHE_DIR%/}/mobala/${MOBALA_LOCK_COMMIT}"
 export MOBALA_CACHE_MAIN="${CACHE_DIR}/mobala.sh"
 export MOBALA_CACHE_LIB="${CACHE_DIR}/mobala-lib.sh"
 export MOBALA_CACHE_RESOLVER="${CACHE_DIR}/mobala-resolver.sh"
 
-export MOBALA_REMOTE_BASE="https://raw.githubusercontent.com/7mind/mobala/refs/heads/${MOBALA_LOCK_COMMIT}"
+export MOBALA_REMOTE_BASE="https://raw.githubusercontent.com/7mind/mobala/${MOBALA_LOCK_COMMIT}"
 export MOBALA_REMOTE_MAIN_FILE="${MOBALA_REMOTE_BASE}/mobala.sh"
 export MOBALA_REMOTE_LIB_FILE="${MOBALA_REMOTE_BASE}/mobala-lib.sh"
 export MOBALA_REMOTE_RESOLVER_FILE="${MOBALA_REMOTE_BASE}/mobala-resolver.sh"
