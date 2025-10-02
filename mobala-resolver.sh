@@ -21,7 +21,8 @@ if [[ "${MOBALA_UPDATE}" == 0 && -f ".mobala/version-commit.lock" ]]; then
   echo "[info] running mobala branch \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\` commit ${MOBALA_LOCK_COMMIT}"
 else
   echo "[info] updating mobala lock, downloading updated commit for remote ref \`${MOBALA_REMOTE_LOCK_SOURCE_REF}\`"
-  MOBALA_LOCK_COMMIT=$(curl "${MOBALA_REMOTE_GET_COMMIT_URL}" | grep -m 1 '\"sha\":' | sed -r 's/.*\"sha\":.*?\"(.*?)\".*/\1/')
+  MOBALA_LOCK_COMMIT=$(curl -sLJ0 -H 'Cache-Control: no-cache, no-store' -o "${cache_tmp}" -w "%{response_code}" "${MOBALA_REMOTE_GET_COMMIT_URL}" \
+                      | grep -m 1 '\"sha\":' | sed -r 's/.*\"sha\":.*?\"(.*?)\".*/\1/')
   export MOBALA_LOCK_COMMIT
   printf '%s' "${MOBALA_LOCK_COMMIT}" > ".mobala/version-commit.lock"
   echo "[info] updated mobala lock to commit ${MOBALA_LOCK_COMMIT} which is the latest commit for ${MOBALA_REMOTE_LOCK_SOURCE_REF}"
