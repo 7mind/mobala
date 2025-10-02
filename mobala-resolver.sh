@@ -19,7 +19,7 @@ MOBALA_REMOTE_LOCK_SOURCE_REF=$(read_trimmed_string ".mobala/version.txt" "relea
 export MOBALA_REMOTE_LOCK_SOURCE_REF
 export MOBALA_REMOTE_GET_COMMIT_URL="https://api.github.com/repos/7mind/mobala/commits/${MOBALA_REMOTE_LOCK_SOURCE_REF}"
 
-MOBALA_REMOTE_LATEST_COMMIT=$(get_commit_of_remote_ref "${MOBALA_REMOTE_LOCK_SOURCE_REF}")
+MOBALA_REMOTE_LATEST_COMMIT=$(get_commit_of_remote_ref "${MOBALA_REMOTE_GET_COMMIT_URL}")
 export MOBALA_REMOTE_LATEST_COMMIT
 
 if [[ "${MOBALA_UPDATE}" == 0 && -f ".mobala/version-commit.lock" ]]; then
