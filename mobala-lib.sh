@@ -266,11 +266,11 @@ function set_scala_variables() {
 
 function set_scala_sbtgen_variables() {
     replacement="build.${CI_BUILD_UNIQ_SUFFIX}"
-    export PROJECT_VERSION=$(cat version.sbt | sed -r 's/.*\"(.*)\".**/\1/' | sed -E "s/SNAPSHOT/${replacement}/")
+    export PROJECT_VERSION=$(cat version.sbt | sed -r 's/.*\"(.*)\".*/\1/' | sed -E "s/SNAPSHOT/${replacement}/")
 
-    export SCALA212=$(cat project/Deps.sc | grep 'val scala212 ' |  sed -r 's/.*\"(.*)\".**/\1/')
-    export SCALA213=$(cat project/Deps.sc | grep 'val scala213 ' |  sed -r 's/.*\"(.*)\".**/\1/')
-    export SCALA3=$(cat project/Deps.sc | grep 'val scala300 ' |  sed -r 's/.*\"(.*)\".**/\1/')
+    export SCALA212=$(cat project/Deps.sc | grep 'val scala212 ' |  sed -r 's/.*\"(.*)\".*/\1/')
+    export SCALA213=$(cat project/Deps.sc | grep 'val scala213 ' |  sed -r 's/.*\"(.*)\".*/\1/')
+    export SCALA3=$(cat project/Deps.sc | grep 'val scala300 ' |  sed -r 's/.*\"(.*)\".*/\1/')
 
     case $SCALA_VERSION in
     2.12) SCALA_VERSION="$SCALA212" ;;
@@ -305,4 +305,3 @@ function set_gh_env() {
     export CI_BUILD_UNIQ_SUFFIX="${CI_BUILD_UNIQ_SUFFIX:-$(date +%s)}"
 }
 # github: end --------------------------------------------------------------------------------------
-
