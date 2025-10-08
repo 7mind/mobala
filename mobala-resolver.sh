@@ -12,7 +12,7 @@ read_trimmed_string() { [[ -s "$1" ]] && sed -e 's/^[[:space:]]*//' -e 's/[[:spa
 
 function get_commit_of_remote_ref() {
   curl -sLJ0 -H 'Cache-Control: no-cache, no-store' -w "%{response_code}" "$1" \
-    | grep -m 1 '\"sha\":' | sed -r 's/.*\"sha\":.*?\"(.*?)\".*/\1/';
+    | grep -m 1 '"sha":' | sed -r 's/.*\"sha\":.*?\"(.*?)\".*/\1/';
 }
 
 MOBALA_REMOTE_LOCK_SOURCE_REF=$(read_trimmed_string ".mobala/version.txt" "release")
