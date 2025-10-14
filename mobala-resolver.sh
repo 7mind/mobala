@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+# bash>4.2 required due to `declare -g`
+bash_major="${BASH_VERSINFO[0]}"
+bash_minor="${BASH_VERSINFO[1]}"
+
+if (( bash_major < 4 )) || { (( bash_major == 4 )) && (( bash_minor < 2 )); }; then
+  echo "Error: Bash 4.2 or higher required. Your version is $BASH_VERSION."
+  exit 1
+fi
+
 set -euo pipefail
 
 # run wih `MOBALA_UPDATE=1 ./run` to update commit lock file
@@ -12,7 +21,7 @@ read_trimmed_string() { [[ -s "$1" ]] && sed -e 's/^[[:space:]]*//' -e 's/[[:spa
 
 function get_commit_of_remote_ref() {
   curl -sLJ0 -H 'Cache-Control: no-cache, no-store' -w "%{response_code}" "$1" \
-    | grep -m 1 '"sha":' | sed -r 's/.*\"sha\":.*?\"(.*?)\".*/\1/';
+    | grep -m 1 '"sha":' | sed -r 's/.*\"sha\":[^\"]*\"([^\"]*)\".*/\1/';
 }
 
 MOBALA_REMOTE_LOCK_SOURCE_REF=$(read_trimmed_string ".mobala/version.txt" "release")
