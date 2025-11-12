@@ -59,6 +59,9 @@ export NIXIFIED=${NIXIFIED:-0}
 function nixify() {
     read -r -a args <<< "$(grep -v '^\s*$' "$MOBALA_KEEP" | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
 
+    local dev_shell_arg=".#$1"
+    args+=("$dev_shell_arg")
+
     if [[ -z "${IN_NIX_SHELL+x}" ]]; then
         echo "[info] Restarting in Nix..."
         export NIXIFIED=1
@@ -81,7 +84,7 @@ function nixify() {
           --keep CI_BRANCH_TAG \
           --keep CI_PULL_REQUEST \
           --keep CI_BUILD_UNIQ_SUFFIX \
-          "${args[@]:-}" \
+          "${args[@]}" \
           --command bash "$script_path" "${@:2}"
     fi
 }
