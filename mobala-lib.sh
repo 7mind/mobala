@@ -57,12 +57,9 @@ function print-help() {
 export NIXIFIED=${NIXIFIED:-0}
 
 function nixify() {
-    read -r -a args <<< "$(grep -v '^\s*$' $MOBALA_KEEP | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
+    read -r -a args <<< "$(grep -v '^\s*$' "$MOBALA_KEEP" | grep -v '#' | sed "s/^/--keep /;s/$/ /" | tr '\n' ' ')"
 
-    local func_args=("$@")
-    local last_index=$(( ${#func_args[@]} - 1 ))
-    local last_arg="${func_args[$last_index]}"
-    local dev_shell=".#$last_arg"
+    local dev_shell_arg=".#$1"
 
     if [[ -z "${IN_NIX_SHELL+x}" ]]; then
         echo "[info] Restarting in Nix..."
@@ -70,7 +67,7 @@ function nixify() {
         nix flake lock
         nix flake metadata
         exec nix develop \
-          $dev_shell \
+          "$dev_shell_arg" \
           --ignore-environment \
           --keep HOME \
           --keep NIXIFIED \
@@ -88,7 +85,7 @@ function nixify() {
           --keep CI_PULL_REQUEST \
           --keep CI_BUILD_UNIQ_SUFFIX \
           "${args[@]:-}" \
-          --command bash "$script_path" "$@"
+          --command bash "$script_path" "${@:2}"
     fi
 }
 # nix: end ----------------------------------------------------------------------------------------

@@ -36,12 +36,12 @@ while [[ $idx -lt $arguments_length ]] ; do
     case "$arg" in
         --nix)
           idx=$((idx+1))
-          shift && nixify "$@" "default"
+          shift && nixify "default" "$@"
           ;;
 
         --nix=*)
           dev_shell="${arg#--nix=}"
-          shift && nixify "$@" $dev_shell
+          shift && nixify "$dev_shell" "$@"
           ;;  
 
         --help)
