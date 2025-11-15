@@ -76,18 +76,21 @@ export MOBALA_PARAMS=${MOBALA_PARAMS:-"${MOBALA_PATH}/${MOBALA_SUBDIR}/params"}
 function download-file() {
     origin="${1}"
     target="${2}"
-    mkdir -p "${CACHE_DIR}"
+    tgt_dir="$(dirname "$target")"
     cache_name="$(basename "$target")"
-    cache_tmp="${CACHE_DIR}/${cache_name}.tmp"
-    rm -rf "${cache_tmp}"
+    cache_tmp="${tgt_dir}/${cache_name}.tmp"
+
+    mkdir -p "${tgt_dir}"
+    rm -f "${cache_tmp}"
+
     download_response="$(curl -sLJ0 -H 'Cache-Control: no-cache, no-store' -o "${cache_tmp}" -w "%{response_code}" "${origin}" || true)"
     if [[ "${download_response}" == "200" ]]; then
-        rm -rf "${target}"
+        rm -f "${target}"
         mv "${cache_tmp}" "${target}"
         echo "[info] cache updated: ${target}"
     else
         echo "[warn] download failed with ${download_response} status code for ${target}"
-        rm "${cache_tmp}"
+        rm -f "${cache_tmp}"
     fi
 }
 
