@@ -122,7 +122,7 @@ done
 
 { echo "Done processing arguments" ; } 2>/dev/null
 
-source "${MOBALA_ENV}" $*
+source "${MOBALA_ENV}" "$@"
 
 invoke_quiet steps_register
 invoke_quiet flows_register

@@ -112,7 +112,7 @@ function invoke_quiet() {
   { set +x ; } > /dev/null 2>&1
   local name=$1
   shift
-  $name $*
+  $name "$@"
   { [[ "${IS_VERBOSE}" == 1 ]] && set -x || set +x ; } > /dev/null 2>&1
 }
 
@@ -120,7 +120,7 @@ function invoke_verbose() {
   local name=$1
   shift
   { [[ "${DO_VERBOSE}" == 1 ]] && set -x || set +x ; } > /dev/null 2>&1
-  $name $*
+  $name "$@"
   { set +x ; } > /dev/null 2>&1
 }
 
